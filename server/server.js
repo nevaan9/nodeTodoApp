@@ -15,20 +15,23 @@ const port = process.env.PORT;
 
 app.use(bodyParser.json());
 
-app.post('/todos', (req, res) => {
-  let todo = new Todo({
-    text: req.body.text
-  });
+app.post('/todos', authenticate, (req, res) => {
+    let todo = new Todo({
+        text: req.body.text,
+        _creator: req.user._id
+    });
 
-  todo.save().then((doc) => {
-    res.send(doc);
-  }, (e) => {
-    res.status(400).send(e);
-  });
+    todo.save().then((doc) => {
+        res.send(doc);
+        }, (e) => {
+        res.status(400).send(e);
+    });
 });
 
-app.get('/todos', (req, res) => {
-  Todo.find().then((todos) => {
+app.get('/todos', authenticate, (req, res) => {
+  Todo.find({
+      _creator: req.user._id
+  }).then((todos) => {
     res.send({todos});
   }, (e) => {
     res.status(400).send(e);
@@ -128,6 +131,16 @@ app.post('/users/login', (req, res) => {
         .catch((e) => {
             res.status(400).send();
         })
+});
+
+// Delete a user
+app.delete('/users/me/token', authenticate, (req, res) => {
+    req.user.removeToken(req.token)
+        .then(() => {
+            res.status(200).send();
+        }, () => {
+            res.status(400).send();
+        });
 });
 
 // Authenticate a user; Authenticate middleware is used.

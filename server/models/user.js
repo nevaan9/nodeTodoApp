@@ -101,10 +101,19 @@ UserSchema.statics.findByCredentials = function (email, password) {
         })
 };
 
+// Function to remove a token
+UserSchema.methods.removeToken = function (token) {
+    let user = this;
+    return user.update({
+        $pull: {
+            tokens: {token}
+        }
+    });
+};
+
 // This is an in-built function that runs every time before save is called
 UserSchema.pre('save', function (next) {
     let user = this;
-
     // Only run if password was modified
     if (user.isModified('password')) {
         // Hashes a password using salt (which is using an extra character at the end of the actual password)
