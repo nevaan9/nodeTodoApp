@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const jwt = require('jsonwebtoken');
 const _ = require('lodash');
+const bcrypt = require('bcryptjs');
 
 // Define a User Schema
 let UserSchema = new mongoose.Schema({
@@ -78,6 +79,24 @@ UserSchema.statics.findByToken = function (token) {
         'tokens.access': 'auth'
     });
 };
+
+// This is an in-built function that runs every time before save is called
+UserSchema.pre('save', function (next) {
+    let user = this;
+
+    // Only run if password was modified
+    if (user.isModified('password')) {
+        // Hashes a password using salt (which is using an extra character at the end of the actual password)
+        bcrypt.genSalt(10, (err, salt) => {
+            bcrypt.hash(user.password, salt, (err, hash) => {
+                user.password = hash;
+                next();
+            });
+        });
+    } else {
+        next();
+    }
+});
 
 let User = mongoose.model('User', UserSchema);
 
