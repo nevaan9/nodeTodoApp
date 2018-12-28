@@ -115,6 +115,21 @@ app.post('/users', (req, res) => {
       })
 });
 
+// Login a user
+app.post('/users/login', (req, res) => {
+    let body = _.pick(req.body, ['email', 'password']);
+
+    User.findByCredentials(body.email, body.password)
+        .then((user) => {
+            user.genAuthToken().then((token) => {
+                res.header('x-auth', token).send(user);
+            });
+        })
+        .catch((e) => {
+            res.status(400).send();
+        })
+});
+
 // Authenticate a user; Authenticate middleware is used.
 app.get('/users/me', authenticate, (req, res) => {
     res.send(req.user);
