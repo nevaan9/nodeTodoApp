@@ -7,13 +7,17 @@ const {ObjectID} = require('mongodb');
 
 let {mongoose} = require('./db/mongoose');
 let {Todo} = require('./models/todo');
-let {User} = require('./models/user');
 let {authenticate} = require('./middleware/authenticate');
 
 let app = express();
 const port = process.env.PORT;
 
+// Define the routes
+let userRoute = require('./routes/userRoutes')
+
+// Middleware
 app.use(bodyParser.json());
+app.use('/users', userRoute);
 
 app.post('/todos', authenticate, (req, res) => {
     let todo = new Todo({
@@ -104,54 +108,6 @@ app.patch('/todos/:id', authenticate, (req, res) => {
   }).catch((e) => {
     res.status(400).send();
   })
-});
-
-// POST /users
-app.post('/users', (req, res) => {
-  let body = _.pick(req.body, ['email', 'password']);
-  let user = new User(body);
-
-  user.save()
-      .then(() => {
-          return user.genAuthToken();
-      })
-      .then((token) => {
-        // this .then gets the return from the above return .then (the genAuthToken function)
-        res.header('x-auth', token).send(user);
-      })
-      .catch((e) => {
-        res.status(400).send(e);
-      })
-});
-
-// Login a user
-app.post('/users/login', (req, res) => {
-    let body = _.pick(req.body, ['email', 'password']);
-
-    User.findByCredentials(body.email, body.password)
-        .then((user) => {
-            user.genAuthToken().then((token) => {
-                res.header('x-auth', token).send(user);
-            });
-        })
-        .catch((e) => {
-            res.status(400).send();
-        })
-});
-
-// Delete a user
-app.delete('/users/me/token', authenticate, (req, res) => {
-    req.user.removeToken(req.token)
-        .then(() => {
-            res.status(200).send();
-        }, () => {
-            res.status(400).send();
-        });
-});
-
-// Authenticate a user; Authenticate middleware is used.
-app.get('/users/me', authenticate, (req, res) => {
-    res.send(req.user);
 });
 
 app.listen(port, () => {
