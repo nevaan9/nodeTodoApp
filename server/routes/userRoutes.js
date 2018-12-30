@@ -38,7 +38,7 @@ router.post('/login', (req, res) => {
         })
 });
 
-// Delete a user
+// Logout a user
 router.delete('/me/token', authenticate, (req, res) => {
     req.user.removeToken(req.token)
         .then(() => {
