@@ -1,3 +1,4 @@
+// THIS FILE SHOULD USUALLY BE PUT IN .gitignore !!!!!!!
 {
   "test": {
     "PORT": 3000,
