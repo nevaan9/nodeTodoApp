@@ -100,6 +100,7 @@ UserSchema.statics.findByCredentials = function (email, password) {
   });
 };
 
+// This function will run everytime before a User is saved to the DB
 UserSchema.pre('save', function (next) {
   var user = this;
 
